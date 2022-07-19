@@ -1,6 +1,7 @@
 package io.left.wifidirecttest;
 
 import static io.left.wifidirecttest.AndroidUtil.REQUEST_ACCESS_FINE_LOCATION;
+import static io.left.wifidirecttest.AndroidUtil.detectInterfaces;
 
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -15,8 +16,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 
@@ -35,7 +40,11 @@ public class MainActivity extends AppCompatActivity {
     private WifiP2pManager wifiP2pManager;
     private WifiP2pManager.Channel channel;
 
-    private final UdpEchoServer udpEchoServer = new UdpEchoServer();
+    private ConnectivityMonitor connectivityMonitor;
+
+    private final UdpEchoServer udpEchoServer = new UdpEchoServer(this);
+    private final TcpEchoServer tcpEchoServer = new TcpEchoServer();
+    private final MulticastEchoServer multicastEchoServer = new MulticastEchoServer();
 
     private WifiManager.WifiLock wifiLock;
     private WifiManager.MulticastLock wifiMulticastLock;
@@ -56,8 +65,6 @@ public class MainActivity extends AppCompatActivity {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
-
-
 
     /**
      * Intended to run in a background thread - continues to check if wifi has been shut off which
@@ -101,10 +108,14 @@ public class MainActivity extends AppCompatActivity {
         wifiLock.release();
         wifiMulticastLock.release();
         udpEchoServer.stop();
+        tcpEchoServer.stop();
+        multicastEchoServer.stop();
     }
 
     void init() {
         connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(CONNECTIVITY_SERVICE);
+        //ConnectivityMonitor connectivityMonitor = new ConnectivityMonitor(connectivityManager);
+        //connectivityManager.registerDefaultNetworkCallback(connectivityMonitor);
         wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
 
         if (wifiStateCheckerThread != null) {
@@ -139,6 +150,13 @@ public class MainActivity extends AppCompatActivity {
             } catch(Exception ex) {
                 Log.e(TAG, "Failed to start udp server");
             }
+            tcpEchoServer.start();
+
+            try {
+                multicastEchoServer.start();
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to start the multicast udp server");
+            }
 
             channel = wifiP2pManager.initialize(getApplicationContext(), getMainLooper(), () -> {
                 Log.d(TAG, "App became disconnected from wifi p2p api");
@@ -150,11 +168,26 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            WiFiDirectServiceManager wiFiDirectServiceManager = new WiFiDirectServiceManager(this, connectivityManager, wifiP2pManager, channel, new ConnectivityMonitor(connectivityManager));
+            connectivityMonitor = new ConnectivityMonitor(connectivityManager);
+            WiFiDirectServiceManager wiFiDirectServiceManager = new WiFiDirectServiceManager(this, connectivityManager, wifiP2pManager, channel, connectivityMonitor);
             WiFiDirectGroupManager wiFiDirectGroupManager = new WiFiDirectGroupManager(this, wifiP2pManager, channel, wiFiDirectServiceManager);
             wiFiDirectGroupManager.start();
         } else {
             Log.d(TAG, "WiFi disabled, can't initialize wifi p2p manager");
         }
+    }
+
+    public void sendMsg(View v) {
+        EditText tvIp = (EditText)findViewById(R.id.txtIp);
+        AndroidUtil.sendUdpMessage(tvIp.getText().toString(), this);
+        //AndroidUtil.sendUdpMessage(connectivityMonitor.getServerAddress().getHostAddress());
+        //AndroidUtil.sendTcpMessage(tvIp.getText().toString());
+        //AndroidUtil.sendUdpMulticast();
+    }
+
+    public void updateIps(View v) {
+        TextView tvIps = (TextView) findViewById(R.id.txtIps);
+        String IPs = detectInterfaces();
+        tvIps.setText(IPs);
     }
 }
