@@ -104,6 +104,12 @@ public class WiFiDirectGroupManager {
                     advertisement.put("pass", wifiP2pGroup.getPassphrase());
 
                     try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
                         Enumeration e = NetworkInterface.getNetworkInterfaces();
                         while (e.hasMoreElements()) {
                             NetworkInterface n = (NetworkInterface) e.nextElement();
@@ -112,10 +118,17 @@ public class WiFiDirectGroupManager {
                             while (ee.hasMoreElements()) {
                                 InetAddress i = (InetAddress) ee.nextElement();
                                 if (!i.isLoopbackAddress()) {
-                                    if (n.getDisplayName().contains("p2p") || n.getDisplayName().contains("wlan")) {
+                                    String iface = n.getDisplayName();
+                                    String hostaddr = i.getHostAddress();
+                                    if (hostaddr == null) {
+                                        continue;
+                                    }
+                                    if (iface.contains("p2p") && hostaddr.contains("%")) {
                                         if (i.getAddress().length > 4) {
-                                            Log.d(TAG, "IPv6: " + i.getHostAddress());
-                                            advertisement.put("ip", i.getHostAddress());
+                                            Log.d(TAG, "IFACE: " + iface + " IPv6: " + hostaddr);
+                                            int iend = hostaddr.indexOf('%');
+                                            advertisement.put("ip", hostaddr.substring(0, iend));
+                                            //advertisement.put("ip", hostaddr);
                                         }
                                     }
                                 }

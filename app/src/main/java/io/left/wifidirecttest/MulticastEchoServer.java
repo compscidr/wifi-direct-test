@@ -1,32 +1,26 @@
 package io.left.wifidirecttest;
 
-import android.app.Activity;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.MulticastSocket;
 
-public class UdpEchoServer {
-    private static final String TAG = UdpEchoServer.class.getName();
-    public static final int DEFAULT_PORT = 8889;
+public class MulticastEchoServer {
+    public static final int DEFAULT_PORT = 8887;
     public static final int MAX_RECEIVE_BUFFER_SIZE = 1024;
-    private DatagramSocket socket;
+    private static final String TAG = MulticastEchoServer.class.getName();
+    private MulticastSocket socket;
     private volatile boolean running = false;
     private Thread listenerThread;
-    private final Activity activity;
+    private InetAddress group;
 
-    public UdpEchoServer(Activity activity) {
-        this.activity = activity;
-    }
-
-    public void start() throws SocketException {
+    public void start() throws IOException {
         running = true;
-        socket = new DatagramSocket(DEFAULT_PORT);
-        socket.setBroadcast(true);
+        socket = new MulticastSocket(DEFAULT_PORT);
+        group = InetAddress.getByName("230.0.0.0");
+        socket.joinGroup(group);
         socket.setReuseAddress(true);
         listenerThread = new Thread(this::listen);
         listenerThread.start();
@@ -45,14 +39,9 @@ public class UdpEchoServer {
                 InetAddress clientAddress = request.getAddress();
                 int clientPort = request.getPort();
 
-                activity.runOnUiThread(() -> {
-                    int duration = Toast.LENGTH_SHORT;
-                    Toast.makeText(activity.getApplicationContext(), "GOT MSG", duration).show();
-                });
-
-                DatagramPacket response = new DatagramPacket(recv, recv.length, clientAddress, clientPort);
+                DatagramPacket response = new DatagramPacket(recv, recv.length, group, DEFAULT_PORT);
                 socket.send(response);
-                Log.d(TAG, "Sent back " + recv.length + " bytes to " + clientAddress + ":" + clientPort);
+                Log.d(TAG, "Sent back " + recv.length + " bytes");
 
             } catch(IOException ex) {
                 Log.d(TAG, "IO Exception on recv: " + ex);
@@ -65,5 +54,4 @@ public class UdpEchoServer {
         socket.close();
         listenerThread.interrupt();
     }
-
 }

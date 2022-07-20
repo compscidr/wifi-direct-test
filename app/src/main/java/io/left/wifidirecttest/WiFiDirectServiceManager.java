@@ -141,15 +141,16 @@ public class WiFiDirectServiceManager {
                         .setNetworkSpecifier(wifiNetworkSpecifier)
                         .build();
 
-                Inet6Address serverAddress = (Inet6Address) Inet6Address.getLoopbackAddress();
-                try {
-                    serverAddress = (Inet6Address) Inet6Address.getByName(record.get("ip").toString());
-                } catch (UnknownHostException e) {
-                    Log.e(TAG, "Error getting ipv6 address from advert: " + e);
-                }
-
                 if (!connectivityMonitor.isConnecting() && !connectivityMonitor.isConnected()) {
-                    connectivityMonitor.setServerAddress(serverAddress);
+                    if (record.containsKey("ip")) {
+                        Inet6Address serverAddress = (Inet6Address) Inet6Address.getLoopbackAddress();
+                        try {
+                            serverAddress = (Inet6Address) Inet6Address.getByName(record.get("ip").toString());
+                            connectivityMonitor.setServerAddress(serverAddress);
+                        } catch (UnknownHostException e) {
+                            Log.e(TAG, "Error getting ipv6 address from advert: " + e);
+                        }
+                    }
                     connectivityMonitor.setConnecting(true);
                     connectivityMonitor.setRequest(request);
                     connectivityManager.requestNetwork(request, connectivityMonitor);
