@@ -17,6 +17,7 @@ import android.util.Log;
 
 import java.net.Inet6Address;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 
 public class WiFiDirectServiceManager {
@@ -30,7 +31,7 @@ public class WiFiDirectServiceManager {
     private final Handler handler = new Handler();
     private Runnable serviceRunnable;
     private Runnable peerRunnable;
-    int delay = 15*1000; //Delay for 15 seconds.  One second = 1000 milliseconds.
+    int delay = 20*1000; //Delay for 15 seconds.  One second = 1000 milliseconds.
     private Map<String,String> advertisement;
 
     public WiFiDirectServiceManager(Activity activity, ConnectivityManager connectivityManager, WifiP2pManager wifiP2pManager, WifiP2pManager.Channel channel, ConnectivityMonitor connectivityMonitor) {
@@ -87,6 +88,7 @@ public class WiFiDirectServiceManager {
             @Override
             public void onSuccess() {
                 Log.d(TAG, "Success adding local service");
+
                 handler.postDelayed(peerRunnable = new Runnable() {
                     @Override
                     public void run() {
@@ -94,7 +96,7 @@ public class WiFiDirectServiceManager {
                         wifiP2pManager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
                             @Override
                             public void onSuccess() {
-                                Log.d(TAG, "Successfully initiated peer discover");
+                                //Log.d(TAG, "Successfully initiated peer discover");
                             }
 
                             @Override
@@ -105,7 +107,6 @@ public class WiFiDirectServiceManager {
                         handler.postDelayed(peerRunnable, delay);
                     }
                 }, 100);
-
 
                 handler.postDelayed(serviceRunnable = new Runnable() {
                     @Override
@@ -162,22 +163,30 @@ public class WiFiDirectServiceManager {
         WifiP2pManager.DnsSdServiceResponseListener servListener = new WifiP2pManager.DnsSdServiceResponseListener() {
             @Override
             public void onDnsSdServiceAvailable(String instanceName, String registrationType, WifiP2pDevice resourceType) {
-                Log.d(TAG, "onBonjourServiceAvailable " + instanceName);
+                Log.d(TAG, "onBonjourServiceAvailable " + instanceName + " " + registrationType + " " + resourceType);
+            }
+        };
+
+        WifiP2pManager.UpnpServiceResponseListener upnpServiceResponseListener = new WifiP2pManager.UpnpServiceResponseListener() {
+            @Override
+            public void onUpnpServiceAvailable(List<String> list, WifiP2pDevice wifiP2pDevice) {
+                Log.d(TAG, "upnp service available: " + list + " " + wifiP2pDevice);
             }
         };
 
         wifiP2pManager.setDnsSdResponseListeners(channel, servListener, txtListener);
+        //wifiP2pManager.setUpnpServiceResponseListener(channel, upnpServiceResponseListener);
         WifiP2pDnsSdServiceRequest serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
         wifiP2pManager.addServiceRequest(channel, serviceRequest, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Log.d(TAG, "Success starting service discovery");
+                //Log.d(TAG, "Success starting service discovery");
                 checkPermission(activity);
                 wifiP2pManager.discoverServices(channel, new WifiP2pManager.ActionListener() {
 
                     @Override
                     public void onSuccess() {
-                        Log.d(TAG, "SUCCESS DISCOVERING SERVICES");
+                        //Log.d(TAG, "SUCCESS DISCOVERING SERVICES");
                     }
 
                     @Override

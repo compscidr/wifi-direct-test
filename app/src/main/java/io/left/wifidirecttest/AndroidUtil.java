@@ -11,6 +11,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.Network;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -28,6 +29,7 @@ import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
@@ -38,6 +40,7 @@ import java.util.Set;
 
 public class AndroidUtil {
     public static final int REQUEST_ACCESS_FINE_LOCATION = 1;
+    public static final int DEFAULT_UDP_ADDRESS = 9999;
 
     public static String TAG = AndroidUtil.class.getName();
     public static void checkPermission(Activity activity) {
@@ -105,6 +108,27 @@ public class AndroidUtil {
             ex.printStackTrace();
         }
         return IPs;
+    }
+
+    public static SocketAddress getWlanAddress() throws SocketException {
+        Enumeration e = NetworkInterface.getNetworkInterfaces();
+        while (e.hasMoreElements()) {
+            NetworkInterface n = (NetworkInterface) e.nextElement();
+            List<InterfaceAddress> interfaceAddresses = n.getInterfaceAddresses();
+
+            Enumeration ee = n.getInetAddresses();
+            while (ee.hasMoreElements()) {
+                InetAddress i = (InetAddress) ee.nextElement();
+                // make sure we get the IPv6 wlan interface and not the ipv4 interface
+                if (n.getDisplayName().contains("wlan") && i.getAddress().length > 4) {
+                    String host = i.getHostAddress();
+                    host = host.substring(0, host.indexOf('%'));
+                    Log.d(TAG, "WLAN: " + host);
+                    return new InetSocketAddress(host, DEFAULT_UDP_ADDRESS);
+                }
+            }
+        }
+        throw new SocketException("WLAN IF NOT FOUND");
     }
 
     public static void sendUdpMessage(String ipAddress, Activity activity) {
@@ -213,44 +237,73 @@ public class AndroidUtil {
         }).start();
     }
 
-    public static void sendUdpMulticast() {
+    public static void sendUdpMulticast(Network network) {
         new Thread(()->{
             // make a UDP request to the server and wait for a response
             InetAddress group;
             DatagramSocket socket;
-            try {
-                group = InetAddress.getByName("230.0.0.0");
-                socket = new DatagramSocket();
-            } catch (SocketException e) {
-                Log.d(TAG, "Error opening socket: " + e);
-                return;
-            } catch (UnknownHostException e) {
-                Log.d(TAG, "Error creating multicast group:" + e);
-                return;
+
+            while (true) {
+                try {
+                    group = InetAddress.getByName("ff02::1");
+                    socket = new DatagramSocket(getWlanAddress());
+                    //network.bindSocket(socket); // didn't work
+                    break;
+
+                } catch(SocketException e) {
+                    Log.d(TAG, "Error opening socket: " + e);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        return;
+                    }
+                } catch (UnknownHostException e) {
+                    Log.d(TAG, "Error creating multicast group:" + e);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        return;
+                    }
+                } catch (IOException e) {
+                    Log.d(TAG, "Error binding socket: " + e);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        return;
+                    }
+                }
             }
 
-            byte[] buffer = "test".getBytes();
+            while (true) {
+                byte[] buffer = "test".getBytes();
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, MulticastEchoServer.DEFAULT_PORT);
                 try {
                     socket.send(packet);
                 } catch (IOException ex) {
                     Log.d(TAG, "Failed sending multicast packet: " + ex);
+                    socket.close();
                 }
 
-                new Thread(() -> {
-                    int count = 0;
-                    while (count < 2) {
-                        byte[] recvBuffer = new byte[MAX_RECEIVE_BUFFER_SIZE];
-                        DatagramPacket recv = new DatagramPacket(recvBuffer, MAX_RECEIVE_BUFFER_SIZE);
-                        try {
-                            socket.receive(recv);
-                            Log.d(TAG, "Received " + recv.getLength() + " bytes from: " + recv.getAddress() + ":" + recv.getPort());
-                        } catch(IOException ex) {
-                            Log.e(TAG, "Error recv: " + ex);
-                            break;
-                        }
-                    }
-                }).start();
+//                new Thread(() -> {
+//                    int count = 0;
+//                    while (count < 2) {
+//                        byte[] recvBuffer = new byte[MAX_RECEIVE_BUFFER_SIZE];
+//                        DatagramPacket recv = new DatagramPacket(recvBuffer, MAX_RECEIVE_BUFFER_SIZE);
+//                        try {
+//                            socket.receive(recv);
+//                            Log.d(TAG, "Received " + recv.getLength() + " bytes from: " + recv.getAddress() + ":" + recv.getPort());
+//                        } catch(IOException ex) {
+//                            Log.e(TAG, "Error recv: " + ex);
+//                            break;
+//                        }
+//                    }
+//                }).start();
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
         }).start();
     }
 }
