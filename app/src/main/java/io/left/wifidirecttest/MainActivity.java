@@ -3,11 +3,16 @@ package io.left.wifidirecttest;
 import static io.left.wifidirecttest.AndroidUtil.REQUEST_ACCESS_FINE_LOCATION;
 import static io.left.wifidirecttest.AndroidUtil.detectInterfaces;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 
 import androidx.annotation.NonNull;
@@ -39,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
     // wifi direct stuff
     private WifiP2pManager wifiP2pManager;
     private WifiP2pManager.Channel channel;
+    private WifiDirectBroadcastReceiver receiver;
+    private final IntentFilter intentFilter = new IntentFilter();
+
 
     private ConnectivityMonitor connectivityMonitor;
 
@@ -99,8 +107,36 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         AndroidUtil.checkPermission(this);
+
+        // Indicates a change in the Wi-Fi P2P status.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+
+        // Indicates a change in the list of available peers.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+
+        // Indicates the state of Wi-Fi P2P connectivity has changed.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+
+        // Indicates this device's details have changed.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+
+
         init();
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        receiver = new WifiDirectBroadcastReceiver(wifiP2pManager, channel);
+        registerReceiver(receiver, intentFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
+    }
+
 
     @Override
     protected void onDestroy() {
@@ -113,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void init() {
+        String interfaces = AndroidUtil.detectInterfaces();
+        Log.d(TAG, "INTERFACES: \n" + interfaces);
         connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(CONNECTIVITY_SERVICE);
         //ConnectivityMonitor connectivityMonitor = new ConnectivityMonitor(connectivityManager);
         //connectivityManager.registerDefaultNetworkCallback(connectivityMonitor);
@@ -143,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
             wifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "P2PDEMO");
             wifiLock.acquire();
             wifiMulticastLock = wifiManager.createMulticastLock("P2PDEMO");
+            wifiMulticastLock.setReferenceCounted(true);
             wifiMulticastLock.acquire();
 
             try {

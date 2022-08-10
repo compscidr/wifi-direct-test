@@ -1,5 +1,6 @@
 package io.left.wifidirecttest;
 
+import static io.left.wifidirecttest.AndroidUtil.sendUdpMulticast;
 import static io.left.wifidirecttest.UdpEchoServer.MAX_RECEIVE_BUFFER_SIZE;
 
 import android.net.ConnectivityManager;
@@ -118,6 +119,8 @@ public class ConnectivityMonitor extends ConnectivityManager.NetworkCallback {
                 e.printStackTrace();
             }
             AndroidUtil.detectInterfaces();
+
+            sendUdpMulticast(network);
         }).start();
     }
 
@@ -157,8 +160,8 @@ public class ConnectivityMonitor extends ConnectivityManager.NetworkCallback {
     public void onUnavailable() {
         super.onUnavailable();
         Log.d(TAG,"Network unavailable");
-//        isConnecting = false;
-//        isConnected = false;
-        connectivityManager.requestNetwork(request, this);
+        isConnecting = false;
+        isConnected = false;
+        //connectivityManager.requestNetwork(request, this);
     }
 }
