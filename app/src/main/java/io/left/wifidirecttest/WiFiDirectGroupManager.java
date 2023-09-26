@@ -88,6 +88,12 @@ public class WiFiDirectGroupManager {
             @Override
             public void onFailure(int i) {
                 Log.d(TAG, "Failed creating group: " + getReason(i));
+                try {
+                    Thread.sleep(500);
+                    createGroup();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }

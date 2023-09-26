@@ -120,7 +120,7 @@ public class ConnectivityMonitor extends ConnectivityManager.NetworkCallback {
             }
             AndroidUtil.detectInterfaces();
 
-            sendUdpMulticast(network);
+           // sendUdpMulticast(network);
         }).start();
     }
 
