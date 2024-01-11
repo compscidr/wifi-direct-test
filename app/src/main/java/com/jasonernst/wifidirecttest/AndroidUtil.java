@@ -1,15 +1,14 @@
-package io.left.wifidirecttest;
+package com.jasonernst.wifidirecttest;
 
 import static android.net.wifi.p2p.WifiP2pManager.BUSY;
 import static android.net.wifi.p2p.WifiP2pManager.ERROR;
 import static android.net.wifi.p2p.WifiP2pManager.P2P_UNSUPPORTED;
 
-import static io.left.wifidirecttest.TcpEchoServer.DEFAULT_PORT;
-import static io.left.wifidirecttest.UdpEchoServer.MAX_RECEIVE_BUFFER_SIZE;
+import static com.jasonernst.wifidirecttest.TcpEchoServer.DEFAULT_PORT;
+import static com.jasonernst.wifidirecttest.TcpEchoServer.MAX_RECEIVE_BUFFER_SIZE;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Network;
 import android.util.Log;
@@ -33,10 +32,7 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class AndroidUtil {
     public static final int REQUEST_ACCESS_FINE_LOCATION = 1;

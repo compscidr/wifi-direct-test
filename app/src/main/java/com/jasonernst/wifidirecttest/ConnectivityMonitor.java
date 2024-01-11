@@ -1,7 +1,7 @@
-package io.left.wifidirecttest;
+package com.jasonernst.wifidirecttest;;
 
-import static io.left.wifidirecttest.AndroidUtil.sendUdpMulticast;
-import static io.left.wifidirecttest.UdpEchoServer.MAX_RECEIVE_BUFFER_SIZE;
+import static com.jasonernst.wifidirecttest.AndroidUtil.sendUdpMulticast;
+import static com.jasonernst.wifidirecttest.TcpEchoServer.MAX_RECEIVE_BUFFER_SIZE;
 
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;

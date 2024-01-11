@@ -1,4 +1,4 @@
-package io.left.wifidirecttest;
+package com.jasonernst.wifidirecttest;
 
 import android.util.Log;
 

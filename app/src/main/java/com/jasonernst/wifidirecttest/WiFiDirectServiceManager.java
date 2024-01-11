@@ -1,7 +1,7 @@
-package io.left.wifidirecttest;
+package com.jasonernst.wifidirecttest;
 
-import static io.left.wifidirecttest.AndroidUtil.checkPermission;
-import static io.left.wifidirecttest.AndroidUtil.getReason;
+import static com.jasonernst.wifidirecttest.AndroidUtil.checkPermission;
+import static com.jasonernst.wifidirecttest.AndroidUtil.getReason;
 
 import android.app.Activity;
 import android.net.ConnectivityManager;

@@ -1,18 +1,12 @@
-package io.left.wifidirecttest;
+package com.jasonernst.wifidirecttest;
 
-import static io.left.wifidirecttest.AndroidUtil.REQUEST_ACCESS_FINE_LOCATION;
-import static io.left.wifidirecttest.AndroidUtil.detectInterfaces;
+import static com.jasonernst.wifidirecttest.AndroidUtil.REQUEST_ACCESS_FINE_LOCATION;
+import static com.jasonernst.wifidirecttest.AndroidUtil.detectInterfaces;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.net.wifi.WifiManager;
-import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 
 import androidx.annotation.NonNull;
@@ -25,10 +19,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -149,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void init() {
-        String interfaces = AndroidUtil.detectInterfaces();
+        String interfaces = detectInterfaces();
         Log.d(TAG, "INTERFACES: \n" + interfaces);
         connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(CONNECTIVITY_SERVICE);
         //ConnectivityMonitor connectivityMonitor = new ConnectivityMonitor(connectivityManager);

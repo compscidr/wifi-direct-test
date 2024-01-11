@@ -1,14 +1,13 @@
-package io.left.wifidirecttest;
+package com.jasonernst.wifidirecttest;
 
-import static io.left.wifidirecttest.AndroidUtil.checkPermission;
-import static io.left.wifidirecttest.AndroidUtil.getReason;
+import static com.jasonernst.wifidirecttest.AndroidUtil.checkPermission;
+import static com.jasonernst.wifidirecttest.AndroidUtil.getReason;
 
 import android.app.Activity;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.util.Log;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;

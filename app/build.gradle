@@ -1,9 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.jasonernst"
+    namespace = "com.jasonernst.wifidirecttest"
+    compileSdk 34
     defaultConfig {
-        applicationId "wifidirecttest"
+        applicationId "com.jasonernst.wifidirecttest"
         minSdkVersion 29
         targetSdkVersion 34
         versionCode 1
@@ -15,6 +16,10 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
