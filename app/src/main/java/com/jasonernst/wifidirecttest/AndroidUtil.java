@@ -260,7 +260,7 @@ public class AndroidUtil {
                     } catch (InterruptedException ex) {
                         return;
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     Log.d(TAG, "Error binding socket: " + e);
                     try {
                         Thread.sleep(1000);
