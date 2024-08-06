@@ -2,7 +2,7 @@
 agp = "8.5.1"
 appcompat = "1.7.0"
 constraintlayout = "2.1.4"
-kotlin = "2.0.0"
+kotlin = "2.0.10"
 
 [libraries]
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
