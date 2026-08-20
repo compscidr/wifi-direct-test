@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "com.jasonernst.wifidirecttest"
-    compileSdk = 34
+    compileSdk = 37
     defaultConfig {
         applicationId = "com.jasonernst.wifidirecttest"
         minSdk = 29
