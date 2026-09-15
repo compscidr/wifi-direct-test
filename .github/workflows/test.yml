@@ -19,7 +19,7 @@ jobs:
       - name: set up JDK
         uses: actions/setup-java@v6
         with:
-          java-version: '17'
+          java-version: '17.0.20+101'
           distribution: 'temurin'
           cache: gradle
       - run: echo "The workflow is now ready to test your code."
